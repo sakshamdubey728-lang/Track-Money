@@ -1,0 +1,6 @@
+{
+  "name": "Track Money",
+  "description": "Track Money – A gamified smart financial tracking platform for young professionals combining budget planning, multi-currency support, AI Coaching, and progressive customizable avatars.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
