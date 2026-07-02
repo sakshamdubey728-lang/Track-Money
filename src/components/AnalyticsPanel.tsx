@@ -4,8 +4,8 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  AreaChart, 
-  Area, 
+  LineChart, 
+  Line, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -73,8 +73,9 @@ export default function AnalyticsPanel({ financialData }: AnalyticsPanelProps) {
   const totalIncomes = financialData.incomes.reduce((sum, i) => sum + Number(i.amount), 0);
   const netCashflow = totalIncomes - totalExpenses;
 
-  // 2. Process Spending trend lines (group by date)
-  // Get last 7 logged dates or generate range
+  // 2. Process Spending trend lines (last 7 days vs daily budget avg)
+  const dailyBudgetAvg = Number(((financialData.monthlyBudget || 1500) / 30).toFixed(2));
+
   const dateMap: Record<string, number> = {};
   financialData.expenses.forEach((e) => {
     const d = e.date.substring(5); // MM-DD
@@ -87,14 +88,21 @@ export default function AnalyticsPanel({ financialData }: AnalyticsPanelProps) {
   })).sort((a, b) => a.date.localeCompare(b.date));
 
   // Default mock dates if tree is empty
-  const trendData = rawTrends.length > 0 ? rawTrends : [
-    { date: "06-14", amount: 15.5 },
-    { date: "06-15", amount: 24.0 },
-    { date: "06-16", amount: 12.8 },
-    { date: "06-17", amount: 45.0 },
-    { date: "06-18", amount: 32.2 },
-    { date: "06-19", amount: totalExpenses || 18.0 },
+  const baseTrends = rawTrends.length > 0 ? rawTrends.slice(-7) : [
+    { date: "06-21", amount: 15.5 },
+    { date: "06-22", amount: 24.0 },
+    { date: "06-23", amount: 12.8 },
+    { date: "06-24", amount: 45.0 },
+    { date: "06-25", amount: 32.2 },
+    { date: "06-26", amount: 28.4 },
+    { date: "06-27", amount: totalExpenses ? Math.min(totalExpenses, 65) : 38.0 },
   ];
+
+  const trendData = baseTrends.map((t) => ({
+    date: t.date,
+    Spent: t.amount,
+    "Daily Budget": dailyBudgetAvg,
+  }));
 
   // 3. Process Income vs Expenses bar chart
   const cashflowBarData = [
@@ -206,22 +214,16 @@ export default function AnalyticsPanel({ financialData }: AnalyticsPanelProps) {
         ) : null}
 
         {activeTab === "trends" ? (
-          /* Area trend chart */
+          /* Line trend chart comparing spending to daily budget average */
           <div className="h-56 w-full">
-            <ResponsiveContainer width="105%" height="100%">
-              <AreaChart data={trendData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorAmt" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00C853" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#00C853" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={trendData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis 
                   dataKey="date" 
                   tickLine={false} 
                   axisLine={false}
-                  tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }}
+                  tick={{ fontSize: 11, fill: "#64748b", fontWeight: "bold" }}
                 />
                 <YAxis 
                   tickLine={false} 
@@ -229,18 +231,29 @@ export default function AnalyticsPanel({ financialData }: AnalyticsPanelProps) {
                   tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: "bold" }}
                 />
                 <Tooltip 
-                  formatter={(val: number) => [`${curSymbol}${val.toFixed(2)}`, "Daily Total"]}
+                  formatter={(val: number) => [`${curSymbol}${val.toFixed(2)}`]}
                   contentStyle={{ background: "#0F172A", border: "none", borderRadius: "10px", color: "#fff" }}
                 />
-                <Area 
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 11, fontWeight: "bold" }} />
+                <Line 
                   type="monotone" 
-                  dataKey="amount" 
-                  stroke="#00C853" 
+                  dataKey="Spent" 
+                  name="Daily Spent"
+                  stroke="#10B981" 
                   strokeWidth={2.5}
-                  fillOpacity={1} 
-                  fill="url(#colorAmt)" 
+                  dot={{ r: 4, fill: "#10B981" }}
+                  activeDot={{ r: 6 }}
                 />
-              </AreaChart>
+                <Line 
+                  type="monotone" 
+                  dataKey="Daily Budget" 
+                  name="Daily Budget Avg"
+                  stroke="#F59E0B" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         ) : null}

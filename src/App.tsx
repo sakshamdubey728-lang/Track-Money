@@ -49,8 +49,8 @@ import AICoach from "./components/AI_Coach";
 import AnalyticsPanel from "./components/AnalyticsPanel";
 import SubscriptionManager from "./components/SubscriptionManager";
 import EmailSimulator from "./components/EmailSimulator";
-import SheetsExport from "./components/SheetsExport";
-import DesktopShortcutCreator from "./components/DesktopShortcutCreator";
+import ClickSpark from "./components/ClickSpark";
+import LandingPage from "./components/LandingPage";
 import { motion, AnimatePresence } from "motion/react";
 
 const LOCAL_STORAGE_KEY = "spendos_finance_data";
@@ -237,7 +237,8 @@ export default function App() {
   }, []);
 
   // Boot Loader Starting Animation Controls
-  const [isBooting, setIsBooting] = useState(true);
+  const [isBooting, setIsBooting] = useState(false);
+  const [currentView, setCurrentView] = useState<"landing" | "dashboard">("landing");
   const [bootProgress, setBootProgress] = useState(0);
   const [bootLogs, setBootLogs] = useState<string[]>([]);
   const [currentUptime, setCurrentUptime] = useState(0);
@@ -764,6 +765,17 @@ export default function App() {
   const totalSavedOnGoals = data.savingsGoals.reduce((sum, g) => sum + Number(g.currentAmount), 0);
   const totalGoalsTargetCombined = data.savingsGoals.reduce((sum, g) => sum + Number(g.targetAmount), 0);
 
+  if (currentView === "landing") {
+    return (
+      <LandingPage 
+        onLaunchApp={() => {
+          setIsBooting(true);
+          setCurrentView("dashboard");
+        }} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-16 relative">
       
@@ -997,8 +1009,8 @@ export default function App() {
 
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Brand Logo Identity */}
-            <div className="flex items-center gap-3">
-              <div id="brand-logo" className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-lg border border-slate-800/80 rotate-6 transform hover:rotate-12 transition-transform cursor-pointer overflow-hidden p-1 relative">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setCurrentView("landing")}>
+              <div id="brand-logo" className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center shadow-lg border border-slate-800/80 rotate-6 transform group-hover:rotate-12 transition-transform cursor-pointer overflow-hidden p-1 relative">
                 <svg viewBox="0 0 40 40" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {/* Subtle grid lines in background */}
                   <line x1="0" y1="10" x2="40" y2="10" stroke="#1E293B" strokeWidth="0.5" strokeDasharray="1 2" />
@@ -1041,6 +1053,14 @@ export default function App() {
             {/* Global Switches control tools */}
             <div className="flex items-center flex-wrap gap-3">
               
+              {/* Back to Landing Page button */}
+              <button
+                onClick={() => setCurrentView("landing")}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer select-none"
+              >
+                Home Screen
+              </button>
+
               {/* Claim check in button */}
               <button
                 onClick={handleDailyCheckIn}
@@ -1652,21 +1672,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Sheets converter export */}
-                <SheetsExport 
-                  financialData={data} 
-                  onGrantXPReward={(xp, msg) => {
-                    grantXP(xp, msg);
-                    unlockAchievement("a1", "Excel master unlocked!");
-                  }}
-                />
 
-                {/* Desktop Shortcut Creator */}
-                <DesktopShortcutCreator 
-                  onGrantXPReward={(xp, msg) => {
-                    grantXP(xp, msg);
-                  }}
-                />
+
+
               </div>
             )}
 
@@ -2302,21 +2310,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Sheets converter export widget */}
-            <SheetsExport 
-              financialData={data} 
-              onGrantXPReward={(xp, msg) => {
-                grantXP(xp, msg);
-                unlockAchievement("a1", "Excel master unlocked!");
-              }}
-            />
 
-            {/* Desktop Shortcut Creator */}
-            <DesktopShortcutCreator 
-              onGrantXPReward={(xp, msg) => {
-                grantXP(xp, msg);
-              }}
-            />
+
+
 
           </div>
 

@@ -1,6 +1,6 @@
 {
   "name": "Track Money",
-  "description": "Track Money – A gamified smart financial tracking platform for young professionals combining budget planning, multi-currency support, AI Coaching, and progressive customizable avatars.",
+  "description": "SpendOS is a premium, modern, and gamified financial tracking application that helps young professionals and students build smart habits, plan budgets, set savings goals, track multi-currency cash flows, and receive real-time AI Coaching.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
