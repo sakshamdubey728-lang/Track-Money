@@ -391,7 +391,7 @@ export default function LandingPage({ onLaunchApp }: LandingPageProps) {
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-extrabold tracking-tight text-white leading-[1.12]">
               Take Control of <br/>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-emerald-400">
-                Every Dollar
+                Every Rupee
               </span> You Spend.
             </h1>
 
