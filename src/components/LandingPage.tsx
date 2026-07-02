@@ -24,7 +24,12 @@ import {
   ChevronRight,
   Globe,
   Bell,
-  Activity
+  Activity,
+  Lock,
+  Eye,
+  EyeOff,
+  LogIn,
+  Key
 } from "lucide-react";
 
 // Types for the animated particles and falling objects
@@ -50,6 +55,40 @@ export default function LandingPage({ onLaunchApp }: LandingPageProps) {
   const [activeTab, setActiveTab] = useState<"features" | "insights" | "goals" | "pricing">("features");
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [cursorGlow, setCursorGlow] = useState(false);
+
+  // Login Modal states
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginStep, setLoginStep] = useState<"form" | "verifying" | "success">("form");
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim()) {
+      setLoginError("Please enter your registered email address.");
+      return;
+    }
+    if (!loginPassword.trim()) {
+      setLoginError("Please enter your security passcode.");
+      return;
+    }
+    setLoginError("");
+    setLoginStep("verifying");
+
+    // Seamless animated console check progress
+    setTimeout(() => {
+      setLoginStep("success");
+      setTimeout(() => {
+        setShowLoginModal(false);
+        setLoginStep("form");
+        setLoginEmail("");
+        setLoginPassword("");
+        onLaunchApp();
+      }, 800);
+    }, 2400);
+  };
   
   // Stats counter states (for counting up animation)
   const [savingsCount, setSavingsCount] = useState(0);
@@ -225,7 +264,13 @@ export default function LandingPage({ onLaunchApp }: LandingPageProps) {
           </div>
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-5">
+            <button 
+              onClick={() => setShowLoginModal(true)}
+              className="text-slate-400 hover:text-white text-sm font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Log In
+            </button>
             <button 
               onClick={(e) => { handleButtonClick(e); onLaunchApp(); }}
               className="relative overflow-hidden px-5 py-2.5 bg-[#00C853] hover:bg-emerald-500 text-white text-sm font-bold rounded-full shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.03] flex items-center gap-1.5 group cursor-pointer"
@@ -270,6 +315,7 @@ export default function LandingPage({ onLaunchApp }: LandingPageProps) {
                 <a href="#about" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-900">About</a>
                 
                 <div className="pt-4 border-t border-slate-900 flex flex-col gap-3">
+                  <button onClick={() => { setMobileMenuOpen(false); setShowLoginModal(true); }} className="w-full py-2.5 bg-slate-900 text-slate-300 rounded-xl font-semibold border border-slate-800">Log In</button>
                   <button onClick={() => { setMobileMenuOpen(false); onLaunchApp(); }} className="w-full py-3 bg-[#00C853] text-white rounded-xl font-bold">Get Started</button>
                 </div>
               </div>
@@ -700,6 +746,178 @@ export default function LandingPage({ onLaunchApp }: LandingPageProps) {
           </div>
         </div>
       </footer>
+
+      {/* Interactive Secure Login Modal */}
+      <AnimatePresence>
+        {showLoginModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative w-full max-w-md bg-slate-900 border border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-2xl shadow-emerald-500/5 overflow-hidden"
+            >
+              {/* Subtle top ambient glowing ray */}
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Close button */}
+              {loginStep === "form" && (
+                <button
+                  onClick={() => {
+                    setShowLoginModal(false);
+                    setLoginError("");
+                  }}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/50 transition-all cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+
+              {loginStep === "form" && (
+                <form onSubmit={handleLoginSubmit} className="space-y-6">
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mx-auto mb-4 shadow-lg shadow-emerald-500/5">
+                      <Lock className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <h3 className="font-display font-bold text-xl text-white">Access Secure Portal</h3>
+                    <p className="text-xs text-slate-400 mt-1.5 max-w-[280px] mx-auto">
+                      Enter your security credentials to authorize and launch your local offline ledger.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Username/Email Input field */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Email Address</label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                          <LogIn className="w-4 h-4" />
+                        </span>
+                        <input
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="dubeysaksham005@gmail.com"
+                          className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-600 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Passcode Input field */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Passcode</label>
+                        <span 
+                          onClick={() => {
+                            setLoginEmail("dubeysaksham005@gmail.com");
+                            setLoginPassword("password123");
+                          }}
+                          className="text-[11px] text-emerald-400 hover:underline cursor-pointer font-semibold"
+                        >
+                          Autofill Demo
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                          <Key className="w-4 h-4" />
+                        </span>
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-slate-600 transition-all outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 cursor-pointer"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {loginError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs text-center font-medium"
+                    >
+                      {loginError}
+                    </motion.div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 bg-[#00C853] hover:bg-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    Authenticate Ledger
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <div className="text-center pt-2">
+                    <p className="text-[11px] text-slate-500">
+                      Don't have credentials? Click <span onClick={() => { setLoginEmail("dubeysaksham005@gmail.com"); setLoginPassword("password123"); }} className="text-emerald-400 hover:underline cursor-pointer font-semibold">Autofill Demo</span> or use <span onClick={() => { setShowLoginModal(false); onLaunchApp(); }} className="text-emerald-400 hover:underline cursor-pointer font-semibold">Get Started</span>
+                    </p>
+                  </div>
+                </form>
+              )}
+
+              {loginStep === "verifying" && (
+                <div className="flex flex-col items-center justify-center py-6 text-center select-none">
+                  {/* Glowing, spinning radar loader */}
+                  <div className="relative w-16 h-16 mb-6 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-2 border-emerald-500/10 border-t-emerald-400 animate-spin" />
+                    <Shield className="w-6 h-6 text-emerald-400 animate-pulse" />
+                  </div>
+
+                  <h3 className="font-display font-bold text-lg text-white">Decrypting Ledger Shards</h3>
+                  <p className="text-xs text-slate-400 mt-1 max-w-[280px]">Establishing secure tunnel to local offline data vault...</p>
+
+                  {/* Diagnostic details terminal overlay */}
+                  <div className="w-full bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 mt-6 text-left font-mono text-[10px] space-y-1.5 text-slate-400 shadow-inner h-28 overflow-hidden">
+                    <div className="flex items-center gap-1.5 text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                      <span>[OK] Security handshake authenticated</span>
+                    </div>
+                    <div className="text-slate-500 flex items-center gap-1.5">
+                      <span>&gt; Mapping local storage databases...</span>
+                    </div>
+                    <div className="text-slate-500 flex items-center gap-1.5 animate-[pulse_1.5s_infinite]">
+                      <span>&gt; Generating unique level XP session tokens...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {loginStep === "success" && (
+                <div className="flex flex-col items-center justify-center py-10 text-center">
+                  <motion.div
+                    initial={{ scale: 0.3, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", damping: 15 }}
+                    className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6 shadow-lg shadow-emerald-500/20"
+                  >
+                    <CheckCircle className="w-8 h-8" />
+                  </motion.div>
+
+                  <h3 className="font-display font-bold text-xl text-white">Access Granted</h3>
+                  <p className="text-xs text-slate-400 mt-1">Session synchronized. Unlocking SpendOS workspace...</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
